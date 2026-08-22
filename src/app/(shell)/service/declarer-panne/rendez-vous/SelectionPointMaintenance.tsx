@@ -101,11 +101,12 @@ export function SelectionPointMaintenance() {
         <TriangleAlerteIcon className="pointer-events-none absolute bottom-20 left-1/2 h-28 w-28 -translate-x-1/2 rotate-[6deg] text-white/10" />
 
         <h2 className="relative text-center text-lg font-bold leading-snug text-white">
-          Sélectionnez un point de maintenance pour prendre rendez-vous
+          Confirmez votre demande de rendez-vous
         </h2>
 
         <p className="relative mt-16 text-center text-sm text-white/70">
-          Aucun point de maintenance disponible pour le moment.
+          Notre équipe vous contactera rapidement pour planifier l&apos;intervention au point de maintenance le plus
+          proche de chez vous.
         </p>
 
         {erreur ? <p className="relative mt-4 text-center text-sm text-rose-200">{erreur}</p> : null}

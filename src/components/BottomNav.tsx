@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { apiFetch } from "@/lib/api";
 import { useServiceSheet } from "@/context/ServiceSheetContext";
+import type { Privilege } from "@/lib/types";
 import { GiftIcon, GridIcon, PlayIcon, ShieldCheckIcon, UserIcon } from "./icons";
 import type { ComponentType, SVGProps } from "react";
 
@@ -13,10 +17,36 @@ type NavItem = {
   badge?: number;
 };
 
-const NAV_ITEMS: NavItem[] = [
-  { href: "/", label: "Space", icon: ShieldCheckIcon },
-  { href: "/privilege", label: "Mes Privilège", icon: GiftIcon, badge: 1 },
-];
+const CLE_PRIVILEGES_VUS = "ordispace.privileges.vus";
+
+/**
+ * Badge "nouveaux privilèges" — purement local (pas de notion de lu/non-lu
+ * côté backend) : on compare le nombre total de privilèges actifs au nombre
+ * déjà vu par ce client sur cet appareil, mémorisé dans localStorage.
+ */
+function useNombreNouveauxPrivileges(): number {
+  const { token } = useAuth();
+  const pathname = usePathname();
+  const [nombre, setNombre] = useState(0);
+
+  useEffect(() => {
+    if (!token) return;
+
+    apiFetch<Privilege[]>("/privileges", { token }).then((liste) => {
+      const total = liste.length;
+      const vus = Number(localStorage.getItem(CLE_PRIVILEGES_VUS) ?? "0");
+
+      if (pathname.startsWith("/privilege")) {
+        localStorage.setItem(CLE_PRIVILEGES_VUS, String(total));
+        setNombre(0);
+      } else {
+        setNombre(Math.max(0, total - vus));
+      }
+    });
+  }, [token, pathname]);
+
+  return nombre;
+}
 
 const NAV_ITEM_PROFIL: NavItem = { href: "/profil", label: "Profil", icon: UserIcon };
 const NAV_ITEM_SERVICE: NavItem = { href: "/service", label: "Service", icon: GridIcon };
@@ -59,11 +89,17 @@ export function BottomNav() {
   const pathname = usePathname();
   const { ouvert, ouvrir } = useServiceSheet();
   const estActif = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  const nouveauxPrivileges = useNombreNouveauxPrivileges();
+
+  const navItems: NavItem[] = [
+    { href: "/", label: "Space", icon: ShieldCheckIcon },
+    { href: "/privilege", label: "Mes Privilège", icon: GiftIcon, badge: nouveauxPrivileges || undefined },
+  ];
 
   return (
     <nav className="sticky bottom-0 z-20 border-t border-brand-line bg-white/95 backdrop-blur supports-backdrop-blur:bg-white/80">
       <ul className="mx-auto flex max-w-xl items-center justify-between px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
-        {NAV_ITEMS.map((item) => (
+        {navItems.map((item) => (
           <li key={item.href} className="flex-1">
             <NavLink item={item} isActive={estActif(item.href)} />
           </li>

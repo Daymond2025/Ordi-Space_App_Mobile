@@ -36,7 +36,7 @@ function ChampInfo({ label, valeur }: { label: string; valeur: string }) {
 }
 
 export default function ComptePage() {
-  const { token, logout } = useAuth();
+  const { token, pret, logout } = useAuth();
   const router = useRouter();
   const [profil, setProfil] = useState<ProfilDetail | null>(null);
   const [adresse, setAdresse] = useState<Adresse | null>(null);
@@ -66,6 +66,46 @@ export default function ComptePage() {
   }
 
   const nomComplet = profil ? (profil.prenom ? `${profil.prenom} ${profil.nom}` : profil.nom) : "";
+
+  if (pret && !token) {
+    return (
+      <main className="min-h-full pb-8">
+        <div className="bg-gradient-brand-blue relative overflow-hidden rounded-b-[2.5rem] px-4 pb-16 pt-4 text-white">
+          <div className="flex items-center justify-between">
+            <Link href="/profil" className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20">
+              <ChevronLeftIcon className="h-5 w-5" />
+            </Link>
+            <h1 className="text-base font-semibold">Mes info</h1>
+            <span className="h-9 w-9" aria-hidden />
+          </div>
+        </div>
+
+        <div className="relative -mt-12 mx-4 flex flex-col items-center rounded-3xl bg-white px-6 py-8 shadow-lg shadow-blue-100">
+          <span className="flex h-20 w-20 items-center justify-center rounded-full bg-[#F1F2F6] text-brand-muted">
+            <UserIcon className="h-9 w-9" />
+          </span>
+          <p className="mt-4 text-center text-sm text-brand-muted">
+            Connecte-toi pour accéder à tes informations personnelles.
+          </p>
+
+          <div className="mt-6 flex w-full flex-col gap-3">
+            <Link
+              href="/connexion"
+              className="bg-gradient-brand-blue flex h-12 w-full items-center justify-center rounded-full text-sm font-semibold text-white"
+            >
+              Se connecter
+            </Link>
+            <Link
+              href="/inscription"
+              className="flex h-12 w-full items-center justify-center rounded-full border border-brand-line text-sm font-semibold text-brand-ink"
+            >
+              Créer un compte
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-full pb-8">
