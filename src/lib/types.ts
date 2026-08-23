@@ -211,6 +211,7 @@ export type AbonnementGarantix = {
 export type AchatDetail = {
   ligne: Achat & { abonnements_garantix: AbonnementGarantix[] };
   abonnement_garantix_actif: AbonnementGarantix | null;
+  abonnement_garantix_en_attente: AbonnementGarantix | null;
   accessoires_compatibles: Produit[];
 };
 

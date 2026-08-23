@@ -91,13 +91,14 @@ export default function GarantixPage() {
       setDetailAchat(rafraichi);
       setFormuleActivationId(null);
     } catch (e) {
-      setErreurActivation(e instanceof ApiRequestError ? e.message : "Impossible d'activer cette formule GarantiX.");
+      setErreurActivation(e instanceof ApiRequestError ? e.message : "Impossible d'envoyer cette demande d'activation GarantiX.");
     } finally {
       setChargementActivation(false);
     }
   }
 
   const abonnementActif = detailAchat?.abonnement_garantix_actif ?? null;
+  const abonnementEnAttente = detailAchat?.abonnement_garantix_en_attente ?? null;
 
   return (
     <main className="min-h-full pb-10">
@@ -151,6 +152,19 @@ export default function GarantixPage() {
                     <MedalStarIcon className="h-10 w-10" />
                   </span>
                 </div>
+              ) : abonnementEnAttente ? (
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-wide text-amber-500">Statut actuel</p>
+                    <p className="mt-1 text-xl font-extrabold text-brand-ink">{abonnementEnAttente.formule.libelle_complet}</p>
+                    <p className="mt-2 text-[11px] text-brand-muted">
+                      Demande envoyée — en attente de confirmation du paiement par notre équipe.
+                    </p>
+                  </div>
+                  <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-500">
+                    <MedalStarIcon className="h-10 w-10" />
+                  </span>
+                </div>
               ) : (
                 <div className="flex items-start justify-between">
                   <div>
@@ -170,6 +184,12 @@ export default function GarantixPage() {
                     Actif
                   </span>
                 </div>
+              ) : abonnementEnAttente ? (
+                <div className="mt-3 flex justify-end">
+                  <span className="rounded-full bg-amber-100 px-4 py-1.5 text-xs font-semibold text-amber-600">
+                    En attente
+                  </span>
+                </div>
               ) : null}
             </div>
           </div>
@@ -182,6 +202,8 @@ export default function GarantixPage() {
                 const degrade = DEGRADES_FORMULE[index % DEGRADES_FORMULE.length];
                 const activationOuverte = formuleActivationId === formule.id;
                 const dejaActive = abonnementActif?.formule.id === formule.id;
+                const enAttenteSurCetteFormule = abonnementEnAttente?.formule.id === formule.id;
+                const unePendanteAilleurs = Boolean(abonnementEnAttente) && !enAttenteSurCetteFormule;
 
                 return (
                   <div key={formule.id} className="relative">
@@ -224,10 +246,15 @@ export default function GarantixPage() {
                           <CheckCircleIcon className="h-5 w-5" />
                           Formule active sur cet ordinateur
                         </div>
+                      ) : enAttenteSurCetteFormule ? (
+                        <div className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-amber-50 text-sm font-bold text-amber-600">
+                          Demande envoyée — en attente de confirmation
+                        </div>
                       ) : activationOuverte ? (
                         <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-brand-line p-3">
                           <p className="text-center text-xs font-semibold text-brand-ink">
                             Aucun paiement en ligne : réglez en espèces ou par Mobile Money auprès de notre équipe.
+                            Votre demande sera activée après confirmation du paiement par l&apos;équipe OrdiSpace.
                           </p>
 
                           <div className="flex gap-2">
@@ -262,7 +289,7 @@ export default function GarantixPage() {
                               className="flex-1 rounded-full px-3 py-2.5 text-xs font-bold text-white disabled:opacity-60"
                               style={{ backgroundImage: degrade }}
                             >
-                              {chargementActivation ? "Activation…" : "Confirmer"}
+                              {chargementActivation ? "Envoi…" : "Envoyer la demande"}
                             </button>
                           </div>
                         </div>
@@ -270,7 +297,7 @@ export default function GarantixPage() {
                         <button
                           type="button"
                           onClick={() => ouvrirActivation(formule.id)}
-                          disabled={!achatId}
+                          disabled={!achatId || unePendanteAilleurs}
                           className="mt-5 flex h-12 w-full items-center justify-center rounded-full text-sm font-bold text-white shadow-lg shadow-black/20 disabled:opacity-50"
                           style={{ backgroundImage: degrade }}
                         >
