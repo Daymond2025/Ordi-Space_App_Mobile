@@ -12,7 +12,7 @@ import { ChevronLeftIcon } from "@/components/icons";
 type ProfilDetail = {
   nom: string;
   prenom: string | null;
-  email: string;
+  email: string | null;
   telephone: string | null;
 };
 
@@ -38,7 +38,7 @@ export default function InformationsPage() {
     apiFetch<ProfilDetail>("/moi/profil", { token }).then((profil) => {
       setNom(profil.nom);
       setPrenom(profil.prenom ?? "");
-      setEmail(profil.email);
+      setEmail(profil.email ?? "");
       setTelephone(profil.telephone ?? "");
       setChargementInitial(false);
     });
@@ -60,7 +60,7 @@ export default function InformationsPage() {
           nom,
           prenom: prenom || null,
           telephone: telephone || null,
-          email,
+          ...(email ? { email } : {}),
           ...(nouveauMotDePasse
             ? {
                 mot_de_passe_actuel: motDePasseActuel,
@@ -103,7 +103,7 @@ export default function InformationsPage() {
             <ChampTexte label="Nom" required value={nom} onChange={setNom} erreur={erreurs.nom} />
             <ChampTexte label="Prénom" value={prenom} onChange={setPrenom} erreur={erreurs.prenom} />
           </div>
-          <ChampTexte label="Adresse e-mail" type="email" required value={email} onChange={setEmail} erreur={erreurs.email} />
+          <ChampTexte label="Adresse e-mail" type="email" value={email} onChange={setEmail} erreur={erreurs.email} placeholder="Optionnel" />
           <ChampTexte label="Téléphone" type="tel" value={telephone} onChange={setTelephone} erreur={erreurs.telephone} />
 
           <div className="mt-2 border-t border-brand-line pt-4">

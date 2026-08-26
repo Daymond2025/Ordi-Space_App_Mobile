@@ -1,65 +1,48 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { ApiRequestError } from "@/lib/api";
 import { ChampTexte } from "@/components/auth/ChampTexte";
-import { ChampMotDePasse } from "@/components/auth/ChampMotDePasse";
 import { BoutonPrincipal } from "@/components/auth/BoutonPrincipal";
-import { EnTeteAuth } from "@/components/auth/EnTeteAuth";
-
-const MOT_DE_PASSE_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+import { ChevronLeftIcon } from "@/components/icons";
 
 export function FormulaireInscription() {
-  const { register } = useAuth();
+  const { inscrireParTelephone } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const telephone = searchParams.get("telephone") ?? "";
 
   const [nom, setNom] = useState("");
   const [prenom, setPrenom] = useState("");
-  const [email, setEmail] = useState("");
-  const [telephone, setTelephone] = useState("");
-  const [motDePasse, setMotDePasse] = useState("");
-  const [confirmation, setConfirmation] = useState("");
-
   const [erreurs, setErreurs] = useState<Record<string, string>>({});
   const [erreurGenerale, setErreurGenerale] = useState<string | null>(null);
   const [chargement, setChargement] = useState(false);
-
-  function validerLocalement(): boolean {
-    const nouvellesErreurs: Record<string, string> = {};
-
-    if (!nom.trim()) nouvellesErreurs.nom = "Le nom est requis.";
-    if (!email.trim()) nouvellesErreurs.email = "L'adresse e-mail est requise.";
-    if (!MOT_DE_PASSE_REGEX.test(motDePasse)) {
-      nouvellesErreurs.password = "8 caractères min., avec majuscule, minuscule et chiffre.";
-    } else if (motDePasse !== confirmation) {
-      nouvellesErreurs.password_confirmation = "Les deux mots de passe ne correspondent pas.";
-    }
-
-    setErreurs(nouvellesErreurs);
-    return Object.keys(nouvellesErreurs).length === 0;
-  }
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setErreurGenerale(null);
 
-    if (!validerLocalement()) return;
+    if (!telephone) {
+      setErreurGenerale("Numéro manquant — recommence depuis l'écran de connexion.");
+      return;
+    }
+    if (!nom.trim()) {
+      setErreurs({ nom: "Le nom est requis." });
+      return;
+    }
 
+    setErreurs({});
     setChargement(true);
     try {
-      await register({
-        nom,
-        prenom: prenom || undefined,
-        email,
-        telephone: telephone || undefined,
-        password: motDePasse,
-        password_confirmation: confirmation,
-      });
-      router.replace(searchParams.get("next") ?? "/");
+      const resultat = await inscrireParTelephone(telephone, nom, prenom || undefined);
+      const params = new URLSearchParams({ telephone, user_id: String(resultat.userId) });
+      if (resultat.codeDebug) params.set("code_debug", resultat.codeDebug);
+      const suite = searchParams.get("next");
+      if (suite) params.set("next", suite);
+
+      router.push(`/connexion/verification?${params.toString()}`);
     } catch (erreur) {
       if (erreur instanceof ApiRequestError) {
         if (erreur.fields) {
@@ -76,67 +59,49 @@ export function FormulaireInscription() {
   }
 
   return (
-    <main className="mx-auto min-h-full w-full max-w-xl bg-background pb-10 md:my-6 md:min-h-[calc(100dvh-3rem)] md:max-h-[calc(100dvh-3rem)] md:overflow-y-auto md:rounded-[2rem] md:shadow-2xl md:shadow-slate-900/15 md:ring-1 md:ring-black/5">
-      <EnTeteAuth
-        titre="Rejoins Ordi'Space"
-        sousTitre="Crée ton compte pour commander, suivre tes garanties et profiter des privilèges."
-      />
+    <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col bg-white pb-10 md:my-6 md:min-h-[calc(100dvh-3rem)] md:max-h-[calc(100dvh-3rem)] md:overflow-y-auto md:rounded-[2rem] md:shadow-2xl md:shadow-slate-900/15 md:ring-1 md:ring-black/5">
+      <div className="bg-gradient-brand-blue relative flex flex-col items-center rounded-b-[2.5rem] px-6 pb-16 pt-6 text-white">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="absolute left-4 top-6 flex h-9 w-9 items-center justify-center rounded-full bg-white/20"
+        >
+          <ChevronLeftIcon className="h-5 w-5" />
+        </button>
+        <h1 className="mt-16 text-center text-2xl font-extrabold leading-snug">
+          Bienvenue
+          <br />
+          sur Ordi&apos;space
+        </h1>
+      </div>
 
-      <form onSubmit={onSubmit} className="mt-8 flex flex-col gap-4 px-6">
-        <div className="grid grid-cols-2 gap-3">
-          <ChampTexte label="Nom" required value={nom} onChange={setNom} erreur={erreurs.nom} autoComplete="family-name" />
+      <form onSubmit={onSubmit} className="relative -mt-8 flex flex-1 flex-col rounded-t-[2rem] bg-white px-6 pb-8 pt-5">
+        <div className="mx-auto mb-8 h-1.5 w-12 rounded-full bg-brand-line" />
+
+        <h2 className="text-center text-lg font-bold text-brand-ink">
+          Finalise la création
+          <br />
+          de ton compte
+        </h2>
+        <p className="mt-2 text-center text-sm text-brand-muted">
+          Ce numéro n&apos;est pas encore enregistré. Renseigne ton identité pour continuer.
+        </p>
+        {telephone ? (
+          <p className="mt-1 text-center text-sm font-semibold text-[color:var(--brand-blue-end)]">+{telephone.replace(/^\+/, "")}</p>
+        ) : null}
+
+        <div className="mt-8 flex flex-col gap-4">
+          <ChampTexte label="Nom" required value={nom} onChange={setNom} erreur={erreurs.nom} autoComplete="family-name" autoFocus />
           <ChampTexte label="Prénom" value={prenom} onChange={setPrenom} erreur={erreurs.prenom} autoComplete="given-name" />
         </div>
 
-        <ChampTexte
-          label="Adresse e-mail"
-          type="email"
-          required
-          autoComplete="email"
-          value={email}
-          onChange={setEmail}
-          erreur={erreurs.email}
-          placeholder="marc@example.com"
-        />
+        {erreurGenerale ? <p className="mt-3 text-sm text-rose-500">{erreurGenerale}</p> : null}
 
-        <ChampTexte
-          label="Téléphone"
-          type="tel"
-          autoComplete="tel"
-          value={telephone}
-          onChange={setTelephone}
-          erreur={erreurs.telephone}
-          placeholder="Optionnel"
-        />
+        <div className="flex-1" />
 
-        <ChampMotDePasse
-          label="Mot de passe"
-          autoComplete="new-password"
-          value={motDePasse}
-          onChange={setMotDePasse}
-          erreur={erreurs.password}
-        />
-
-        <ChampMotDePasse
-          label="Confirmer le mot de passe"
-          autoComplete="new-password"
-          value={confirmation}
-          onChange={setConfirmation}
-          erreur={erreurs.password_confirmation}
-        />
-
-        {erreurGenerale ? <p className="text-sm text-rose-500">{erreurGenerale}</p> : null}
-
-        <BoutonPrincipal chargement={chargement} texteChargement="Création du compte…" className="mt-2">
-          Créer mon compte
+        <BoutonPrincipal chargement={chargement} texteChargement="Création du compte…" className="mt-10">
+          continuer
         </BoutonPrincipal>
-
-        <p className="mt-4 text-center text-sm text-brand-muted">
-          Déjà un compte ?{" "}
-          <Link href="/connexion" className="font-semibold text-brand-ink underline underline-offset-2">
-            Se connecter
-          </Link>
-        </p>
       </form>
     </main>
   );

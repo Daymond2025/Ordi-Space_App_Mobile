@@ -1,13 +1,13 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { apiFetch, ApiRequestError } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 
 export type Utilisateur = {
   id: number;
   nom: string;
   prenom: string | null;
-  email: string;
+  email: string | null;
   type_utilisateur: string;
   roles: string[];
   permissions: string[];
@@ -15,21 +15,16 @@ export type Utilisateur = {
 
 type SessionResult = { user: Utilisateur; token: string };
 
-type RegisterPayload = {
-  nom: string;
-  prenom?: string;
-  email: string;
-  telephone?: string;
-  password: string;
-  password_confirmation: string;
-};
+type DemandeOtpResultat = { compteExistant: boolean; userId?: number; codeDebug?: string };
+type InscriptionResultat = { userId: number; codeDebug?: string };
 
 type AuthContextValue = {
   user: Utilisateur | null;
   token: string | null;
   pret: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (payload: RegisterPayload) => Promise<void>;
+  demanderOtp: (telephone: string) => Promise<DemandeOtpResultat>;
+  inscrireParTelephone: (telephone: string, nom: string, prenom?: string) => Promise<InscriptionResultat>;
+  verifierOtp: (userId: number, code: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -63,31 +58,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STOCKAGE_CLE, JSON.stringify(session));
   }
 
-  async function login(email: string, password: string) {
-    const reponse = await apiFetch<SessionResult | { requires_2fa: true; user_id: number }>(
-      "/auth/login",
-      { method: "POST", body: { email, password, device_name: NOM_APPAREIL } }
+  async function demanderOtp(telephone: string): Promise<DemandeOtpResultat> {
+    const reponse = await apiFetch<{ compte_existant: boolean; user_id?: number; code_debug?: string }>(
+      "/auth/telephone/otp",
+      { method: "POST", body: { telephone } }
     );
 
-    if ("requires_2fa" in reponse) {
-      // N'arrive jamais pour un compte Client — réservé à Coordinateur/Admin,
-      // qui utilisent une autre application.
-      throw new ApiRequestError(
-        {
-          code: "COMPTE_NON_SUPPORTE",
-          message: "Ce compte nécessite une vérification supplémentaire non disponible ici.",
-        },
-        403
-      );
-    }
-
-    memoriser(reponse);
+    return { compteExistant: reponse.compte_existant, userId: reponse.user_id, codeDebug: reponse.code_debug };
   }
 
-  async function register(payload: RegisterPayload) {
-    const reponse = await apiFetch<SessionResult>("/auth/register", {
+  async function inscrireParTelephone(telephone: string, nom: string, prenom?: string): Promise<InscriptionResultat> {
+    const reponse = await apiFetch<{ user_id: number; code_debug?: string }>("/auth/telephone/inscription", {
       method: "POST",
-      body: { ...payload, type_utilisateur: "client" },
+      body: { telephone, nom, prenom },
+    });
+
+    return { userId: reponse.user_id, codeDebug: reponse.code_debug };
+  }
+
+  async function verifierOtp(userId: number, code: string) {
+    const reponse = await apiFetch<SessionResult>("/auth/verify-otp", {
+      method: "POST",
+      body: { user_id: userId, code, device_name: NOM_APPAREIL },
     });
 
     memoriser(reponse);
@@ -103,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, pret, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, pret, demanderOtp, inscrireParTelephone, verifierOtp, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,88 +1,97 @@
 "use client";
 
-import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { ApiRequestError } from "@/lib/api";
-import { ChampTexte } from "@/components/auth/ChampTexte";
-import { ChampMotDePasse } from "@/components/auth/ChampMotDePasse";
-import { BoutonPrincipal } from "@/components/auth/BoutonPrincipal";
-import { EnTeteAuth } from "@/components/auth/EnTeteAuth";
+import { ChampTelephoneWhatsapp } from "@/components/auth/ChampTelephoneWhatsapp";
+import { BoutonAuthCompact } from "@/components/auth/BoutonAuthCompact";
+import { ChevronLeftIcon } from "@/components/icons";
 
 export function FormulaireConnexion() {
-  const { login } = useAuth();
+  const { demanderOtp } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [email, setEmail] = useState("");
-  const [motDePasse, setMotDePasse] = useState("");
-  const [erreurs, setErreurs] = useState<Record<string, string>>({});
-  const [erreurGenerale, setErreurGenerale] = useState<string | null>(null);
+  const [telephone, setTelephone] = useState(() => (searchParams.get("telephone") ?? "").replace(/^\+225/, ""));
+  const [erreur, setErreur] = useState<string | null>(null);
   const [chargement, setChargement] = useState(false);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
-    setErreurs({});
-    setErreurGenerale(null);
-    setChargement(true);
+    setErreur(null);
 
+    if (!telephone.trim()) {
+      setErreur("Entre ton numéro whatsapp.");
+      return;
+    }
+
+    setChargement(true);
     try {
-      await login(email, motDePasse);
-      router.replace(searchParams.get("next") ?? "/");
-    } catch (erreur) {
-      if (erreur instanceof ApiRequestError) {
-        if (erreur.fields) {
-          setErreurs(Object.fromEntries(Object.entries(erreur.fields).map(([champ, msgs]) => [champ, msgs[0]])));
-        } else {
-          setErreurGenerale(erreur.message);
-        }
+      const resultat = await demanderOtp(telephone);
+      const suite = searchParams.get("next");
+      const params = new URLSearchParams({ telephone });
+      if (suite) params.set("next", suite);
+
+      if (resultat.compteExistant && resultat.userId) {
+        params.set("user_id", String(resultat.userId));
+        if (resultat.codeDebug) params.set("code_debug", resultat.codeDebug);
+        router.push(`/connexion/verification?${params.toString()}`);
       } else {
-        setErreurGenerale("Impossible de se connecter. Vérifiez votre connexion internet.");
+        router.push(`/inscription?${params.toString()}`);
       }
+    } catch (erreur) {
+      setErreur(erreur instanceof ApiRequestError ? erreur.message : "Impossible de se connecter. Vérifiez votre connexion internet.");
     } finally {
       setChargement(false);
     }
   }
 
   return (
-    <main className="mx-auto min-h-full w-full max-w-xl bg-background pb-10 md:my-6 md:min-h-[calc(100dvh-3rem)] md:max-h-[calc(100dvh-3rem)] md:overflow-y-auto md:rounded-[2rem] md:shadow-2xl md:shadow-slate-900/15 md:ring-1 md:ring-black/5">
-      <EnTeteAuth
-        titre="Content de te revoir 👋"
-        sousTitre="Connecte-toi pour retrouver tes commandes, garanties et privilèges."
-      />
+    <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col bg-white pb-10 md:my-6 md:min-h-[calc(100dvh-3rem)] md:max-h-[calc(100dvh-3rem)] md:overflow-y-auto md:rounded-[2rem] md:shadow-2xl md:shadow-slate-900/15 md:ring-1 md:ring-black/5">
+      <div className="bg-gradient-brand-blue relative flex flex-col items-center rounded-b-[2.5rem] px-6 pb-6 pt-6 text-white">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="absolute left-4 top-6 flex h-9 w-9 items-center justify-center rounded-full bg-white/20"
+        >
+          <ChevronLeftIcon className="h-5 w-5" />
+        </button>
+        <h1 className="mt-2 text-center text-2xl font-extrabold leading-snug">
+          Connecte-toi
+          <br />
+          a ton Ordi&apos;space
+        </h1>
 
-      <form onSubmit={onSubmit} className="mt-8 flex flex-col gap-4 px-6">
-        <ChampTexte
-          label="Adresse e-mail"
-          type="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={setEmail}
-          erreur={erreurs.email}
-          placeholder="marc@example.com"
+        <Image
+          src="/images/mascotte.png"
+          alt=""
+          width={275}
+          height={274}
+          className="mt-2 h-[178px] w-[179px] object-contain"
+          priority
         />
-        <ChampMotDePasse
-          label="Mot de passe"
-          autoComplete="current-password"
-          value={motDePasse}
-          onChange={setMotDePasse}
-          erreur={erreurs.password}
-        />
+      </div>
 
-        {erreurGenerale ? <p className="text-sm text-rose-500">{erreurGenerale}</p> : null}
+      <form onSubmit={onSubmit} className="relative -mt-6 flex flex-1 flex-col rounded-t-[2rem] bg-white px-6 pb-8 pt-5">
+        <div className="mx-auto mb-8 h-1.5 w-12 rounded-full bg-brand-line" />
 
-        <BoutonPrincipal chargement={chargement} texteChargement="Connexion…" className="mt-2">
-          Se connecter
-        </BoutonPrincipal>
+        <h2 className="text-center text-lg font-bold text-brand-ink">
+          Entre ton numéro
+          <br />
+          whatsapp
+        </h2>
 
-        <p className="mt-4 text-center text-sm text-brand-muted">
-          Pas encore de compte ?{" "}
-          <Link href="/inscription" className="font-semibold text-brand-ink underline underline-offset-2">
-            Créer un compte
-          </Link>
-        </p>
+        <div className="mt-8">
+          <ChampTelephoneWhatsapp value={telephone} onChange={setTelephone} erreur={erreur ?? undefined} autoFocus />
+        </div>
+
+        <div className="flex-1" />
+
+        <BoutonAuthCompact chargement={chargement} texteChargement="Vérification…" className="mt-10">
+          connexion
+        </BoutonAuthCompact>
       </form>
     </main>
   );
