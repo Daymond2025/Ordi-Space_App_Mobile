@@ -34,15 +34,20 @@ export async function apiFetch<T>(
   path: string,
   options: { method?: string; body?: unknown; token?: string } = {}
 ): Promise<T> {
+  // FormData (upload de fichier, ex. preuves de réclamation) : ne pas
+  // JSON.stringify ni poser Content-Type nous-mêmes — le navigateur pose la
+  // frontière multipart correcte automatiquement.
+  const estFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
+
   const response = await fetch(`${BASE_URL}${path}`, {
     method: options.method ?? "GET",
     cache: "no-store",
     headers: {
-      "Content-Type": "application/json",
+      ...(estFormData ? {} : { "Content-Type": "application/json" }),
       Accept: "application/json",
       ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
     },
-    body: options.body ? JSON.stringify(options.body) : undefined,
+    body: estFormData ? (options.body as FormData) : options.body ? JSON.stringify(options.body) : undefined,
   });
 
   const json = await response.json().catch(() => null);

@@ -18,6 +18,7 @@ const SERVICES: ServiceTile[] = [
   { label: "Asistances", image: "/images/soutien-technique.png", bg: "#DFF5E9", href: "/service/assistances" },
   { label: "GarantiX", image: "/images/garantix.png", bg: "#E8F0FE", href: "/service/garantix" },
   { label: "Déclarer une panne", image: "/images/declare_panne.png", bg: "#FBE1E1", href: "/service/declarer-panne" },
+  { label: "Service après-vente", image: "/images/service-apres-vente.svg", bg: "#E0F7F0", href: "/service/apres-vente" },
   { label: "Aide rapide", image: "/images/support-agent.png", bg: "#EAE6FB", href: "/profil/aide", photo: true },
 ];
 

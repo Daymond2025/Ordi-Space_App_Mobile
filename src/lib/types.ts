@@ -158,6 +158,18 @@ export function formaterDate(iso: string): string {
   return new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(iso));
 }
 
+export function formaterTempsRelatif(iso: string): string {
+  const secondes = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (secondes < 60) return "à l'instant";
+  const minutes = Math.floor(secondes / 60);
+  if (minutes < 60) return `il y a ${minutes} min`;
+  const heures = Math.floor(minutes / 60);
+  if (heures < 24) return `il y a ${heures}h`;
+  const jours = Math.floor(heures / 24);
+  if (jours < 30) return `il y a ${jours}j`;
+  return formaterDate(iso);
+}
+
 export type CommandeResume = {
   id: number;
   statut_commande: StatutCommande;
@@ -217,31 +229,76 @@ export type AchatDetail = {
 
 // --- Réclamations ---------------------------------------------------------
 
-export type StatutReclamation = "nouvelle" | "en_cours" | "resolue" | "rejetee";
+// "annulee" est un retrait volontaire par l'auteur (bouton "Annuler" de
+// l'écran détail), distinct de "rejetee" qui est une décision du staff.
+export type StatutReclamation = "nouvelle" | "en_cours" | "resolue" | "rejetee" | "annulee";
 
 export const LIBELLE_STATUT_RECLAMATION: Record<StatutReclamation, string> = {
-  nouvelle: "Nouvelle",
+  nouvelle: "En attente",
   en_cours: "En cours",
-  resolue: "Résolue",
+  resolue: "Terminé",
   rejetee: "Rejetée",
+  annulee: "Annulée",
 };
 
 export const STYLE_STATUT_RECLAMATION: Record<StatutReclamation, string> = {
-  nouvelle: "bg-rose-100 text-rose-600",
+  nouvelle: "bg-slate-100 text-slate-500",
   en_cours: "bg-sky-100 text-sky-600",
   resolue: "bg-emerald-100 text-emerald-600",
-  rejetee: "bg-brand-line text-brand-muted",
+  rejetee: "bg-amber-100 text-amber-600",
+  annulee: "bg-rose-100 text-rose-600",
 };
 
 export type Reclamation = {
   id: number;
   sujet: string;
+  titre: string;
   description: string;
   statut: StatutReclamation;
   reponse_admin: string | null;
   date_reclamation: string;
   date_traitement: string | null;
   commande: CommandeResume | null;
+};
+
+export type PreuveReclamation = {
+  id: number;
+  fichier: string;
+};
+
+export type ProduitReclamationApercu = {
+  id: number;
+  nom_produit: string;
+  prix: string | number;
+  photo: string | null;
+  disponible: boolean;
+};
+
+export type FournisseurReclamationApercu = {
+  user_id: number;
+  nom_entreprise: string;
+  nom: string;
+  prenom: string | null;
+  telephone: string;
+};
+
+// Forme renvoyée par GET /reclamations/{id} — enrichie par rapport à la
+// liste (produit/fournisseur liés + preuves), voir ReclamationController::show().
+export type ReclamationDetail = {
+  id: number;
+  titre: string;
+  sujet: string;
+  description: string;
+  statut: StatutReclamation;
+  reponse_admin: string | null;
+  date_reclamation: string;
+  date_traitement: string | null;
+  commande: {
+    id: number;
+    produit: ProduitReclamationApercu | null;
+    fournisseur: FournisseurReclamationApercu | null;
+  } | null;
+  preuves: PreuveReclamation[];
 };
 
 // --- Notifications ---------------------------------------------------------
