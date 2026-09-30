@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch, ApiRequestError } from "@/lib/api";
 import { formaterPrix, type Achat, type AchatDetail } from "@/lib/types";
@@ -20,7 +20,17 @@ const TYPES_PROBLEME = [
   "Autre problème",
 ];
 
+// useSearchParams() exige un <Suspense> autour de tout ce qui l'utilise,
+// sinon le build échoue au prerendering (cf. market-space/page.tsx).
 export default function PreoccupationsApresVentePage() {
+  return (
+    <Suspense>
+      <PreoccupationsApresVenteContenu />
+    </Suspense>
+  );
+}
+
+function PreoccupationsApresVenteContenu() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { token } = useAuth();

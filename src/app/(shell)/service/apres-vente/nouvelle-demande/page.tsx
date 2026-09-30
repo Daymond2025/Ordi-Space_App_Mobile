@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/api";
 import { formaterPrix, type Achat, type Pagination } from "@/lib/types";
@@ -11,7 +11,18 @@ import { EnTeteApresVente } from "./EnTeteApresVente";
 
 const DEGRADE_CONTINUER = "linear-gradient(90deg, #0077FF 0%, #00BFFF 100%)";
 
+// useSearchParams() exige un <Suspense> autour de tout ce qui l'utilise,
+// sinon le build échoue au prerendering (cf. market-space/page.tsx, même
+// pattern déjà établi dans ce projet).
 export default function SelectionProduitApresVentePage() {
+  return (
+    <Suspense>
+      <SelectionProduitApresVenteContenu />
+    </Suspense>
+  );
+}
+
+function SelectionProduitApresVenteContenu() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { token, pret } = useAuth();
