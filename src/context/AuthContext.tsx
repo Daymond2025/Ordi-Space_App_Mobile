@@ -23,7 +23,7 @@ type AuthContextValue = {
   token: string | null;
   pret: boolean;
   demanderOtp: (telephone: string) => Promise<DemandeOtpResultat>;
-  inscrireParTelephone: (telephone: string, nom: string, prenom?: string) => Promise<InscriptionResultat>;
+  inscrireParTelephone: (telephone: string, nom: string, prenom?: string, photo?: File) => Promise<InscriptionResultat>;
   verifierOtp: (userId: number, code: string) => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -67,10 +67,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { compteExistant: reponse.compte_existant, userId: reponse.user_id, codeDebug: reponse.code_debug };
   }
 
-  async function inscrireParTelephone(telephone: string, nom: string, prenom?: string): Promise<InscriptionResultat> {
+  async function inscrireParTelephone(telephone: string, nom: string, prenom?: string, photo?: File): Promise<InscriptionResultat> {
+    let body: unknown = { telephone, nom, prenom };
+    if (photo) {
+      const formData = new FormData();
+      formData.append("telephone", telephone);
+      formData.append("nom", nom);
+      if (prenom) formData.append("prenom", prenom);
+      formData.append("photo", photo);
+      body = formData;
+    }
+
     const reponse = await apiFetch<{ user_id: number; code_debug?: string }>("/auth/telephone/inscription", {
       method: "POST",
-      body: { telephone, nom, prenom },
+      body,
     });
 
     return { userId: reponse.user_id, codeDebug: reponse.code_debug };

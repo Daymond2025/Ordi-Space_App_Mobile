@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Nunito_Sans } from "next/font/google";
+import { Geist_Mono, Roboto } from "next/font/google";
 import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
 
-const nunitoSans = Nunito_Sans({
-  variable: "--font-nunito-sans",
+// Police par défaut de toutes les plateformes OrdiSpace (Admin/Fournisseur/
+// Coordinateur/Livreur/Client) : Roboto, repli Arial puis sans-serif.
+const roboto = Roboto({
+  variable: "--font-roboto",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["400", "500", "700", "900"],
 });
 
 const geistMono = Geist_Mono({
@@ -21,7 +23,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" className={`${nunitoSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="fr" className={`${roboto.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-background text-brand-ink md:bg-[linear-gradient(160deg,#eef3fb_0%,#e3e9f5_45%,#eef1f8_100%)]">
         <AuthProvider>{children}</AuthProvider>
       </body>

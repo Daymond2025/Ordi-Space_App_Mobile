@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { ApiRequestError } from "@/lib/api";
 import { ChampTexte } from "@/components/auth/ChampTexte";
+import { ChampPhotoProfil } from "@/components/auth/ChampPhotoProfil";
 import { BoutonPrincipal } from "@/components/auth/BoutonPrincipal";
 import { ChevronLeftIcon } from "@/components/icons";
 
@@ -16,6 +17,7 @@ export function FormulaireInscription() {
 
   const [nom, setNom] = useState("");
   const [prenom, setPrenom] = useState("");
+  const [photo, setPhoto] = useState<File | null>(null);
   const [erreurs, setErreurs] = useState<Record<string, string>>({});
   const [erreurGenerale, setErreurGenerale] = useState<string | null>(null);
   const [chargement, setChargement] = useState(false);
@@ -36,7 +38,7 @@ export function FormulaireInscription() {
     setErreurs({});
     setChargement(true);
     try {
-      const resultat = await inscrireParTelephone(telephone, nom, prenom || undefined);
+      const resultat = await inscrireParTelephone(telephone, nom, prenom || undefined, photo || undefined);
       const params = new URLSearchParams({ telephone, user_id: String(resultat.userId) });
       if (resultat.codeDebug) params.set("code_debug", resultat.codeDebug);
       const suite = searchParams.get("next");
@@ -90,7 +92,11 @@ export function FormulaireInscription() {
           <p className="mt-1 text-center text-sm font-semibold text-[color:var(--brand-blue-end)]">+{telephone.replace(/^\+/, "")}</p>
         ) : null}
 
-        <div className="mt-8 flex flex-col gap-4">
+        <div className="mt-6 flex justify-center">
+          <ChampPhotoProfil onChange={setPhoto} />
+        </div>
+
+        <div className="mt-6 flex flex-col gap-4">
           <ChampTexte label="Nom" required value={nom} onChange={setNom} erreur={erreurs.nom} autoComplete="family-name" autoFocus />
           <ChampTexte label="Prénom" value={prenom} onChange={setPrenom} erreur={erreurs.prenom} autoComplete="given-name" />
         </div>
