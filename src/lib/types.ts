@@ -10,17 +10,59 @@ export type Categorie = {
   description: string | null;
 };
 
+export type EtatProduit = "neuf" | "quasi_neuf" | "occasion" | "reconditionne";
+
+export const LIBELLE_ETAT_PRODUIT: Record<EtatProduit, string> = {
+  neuf: "Neuf",
+  quasi_neuf: "Quasi neuf",
+  occasion: "Occasion",
+  reconditionne: "Reconditionné",
+};
+
+export type Localite = { id: number; nom: string; type: string };
+
+export type FraisLivraisonProduit = {
+  id: number;
+  montant: string;
+  localite: Localite;
+};
+
 export type Produit = {
   id: number;
   nom_produit: string;
   description: string | null;
   prix: string;
+  // Prix effectivement payé par le client (généralement égal à `prix`, sauf
+  // promotion) et prix barré affiché à côté quand il y en a une — voir
+  // Produit::fillable côté backend. `pourcentage_reduction` n'est renseigné
+  // que dans ce même cas.
+  prix_vente: string | null;
+  prix_barre: string | null;
+  pourcentage_reduction: number | null;
   quantite_stock: number;
   type_livraison: "physique" | "numerique";
   duree_garantie_mois: number | null;
   statut_produit: string;
+  // Caractéristiques en texte libre, souvent absentes (accessoires, logiciels,
+  // ou produit saisi sans détail) — n'affiche la pastille specs que si au
+  // moins une est renseignée.
+  processeur: string | null;
+  memoire_ram: string | null;
+  stockage: string | null;
+  taille: string | null;
+  carte_graphique: string | null;
+  systeme_exploitation: string | null;
+  couleur: string | null;
+  etat_produit: EtatProduit | null;
+  cadeaux: string[] | null;
+  contenu_pack: string | null;
+  // Mise en avant payante par le fournisseur (voir produits.booster) — sert
+  // de signal réel pour le badge "Meilleure vente" du Market'Space.
+  est_booste: boolean;
+  date_ajout: string;
   categorie: Categorie;
   images: ImageProduit[];
+  frais_livraison: FraisLivraisonProduit[];
 };
 
 export type LignePanier = {
@@ -43,6 +85,12 @@ export type Adresse = {
   rue: string;
   ville: string;
   pays: string;
+  // Obligatoire côté backend (MoiController::ajouterAdresse()) : sert au
+  // rapprochement tarifaire des frais de livraison (FraisLivraisonProduit).
+  // Sans elle, toute commande à livraison physique vers cette adresse est
+  // refusée ("localité non reconnue").
+  localite_id: number | null;
+  localite: Localite | null;
 };
 
 export type Pagination<T> = {

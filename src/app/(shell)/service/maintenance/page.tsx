@@ -23,7 +23,7 @@ export default function MaintenancePage() {
       <TriangleAlerteIcon className="pointer-events-none absolute right-4 bottom-24 h-24 w-24 rotate-[-6deg] text-white/10" />
 
       <div className="relative overflow-hidden rounded-b-[34px] px-5 pb-16 pt-5" style={{ backgroundImage: DEGRADE_HEADER }}>
-        <p className="relative text-lg font-extrabold text-white">Ordi&apos;Space</p>
+        <Image src="/images/Logo_Ordi_Space_bleu_et_blanc.png" alt="Ordi'Space" width={859} height={291} className="relative h-10 w-auto object-contain" priority />
 
         <div className="relative mt-4 rounded-3xl border-2 border-sky-300 bg-white p-4 shadow-lg shadow-blue-900/10">
           <div className="max-w-[60%]">

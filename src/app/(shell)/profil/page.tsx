@@ -56,7 +56,7 @@ export default function ProfilPage() {
       <section className="bg-gradient-brand-blue rounded-b-[2.5rem] px-5 pb-14 pt-6 text-white">
         <div className="flex items-center justify-between">
           <span className="w-9" aria-hidden />
-          <h1 className="text-lg font-bold">Ordi&apos;Space</h1>
+          <Image src="/images/Logo_Ordi_Space_bleu_et_blanc.png" alt="Ordi'Space" width={859} height={291} className="h-10 w-auto object-contain" priority />
           <Link
             href="/notifications"
             className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white"
