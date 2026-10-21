@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/api";
 import { formaterDate, type Achat, type NotificationOrdispace, type Pagination, type Privilege, type Tutoriel } from "@/lib/types";
-import { BellIcon, GarantieBadgeIcon, PlayIcon, TagIcon } from "@/components/icons";
+import { BellIcon, EyeIcon, GarantieBadgeIcon, PlayIcon, TagIcon } from "@/components/icons";
 import { degradePrivilege, tagPrivilege, valeurAffichee } from "./privilege/data";
 
 type ProfilResume = { prenom: string | null; nom: string; created_at: string };
@@ -109,7 +109,7 @@ export default function AccueilPage() {
       <section className="mt-4 flex justify-between gap-2 px-4">
         <Link
           href="/mes-achats"
-          className="flex h-[116px] w-[108.66px] flex-col items-center justify-center gap-2 rounded-[25px] border-[3px] border-white/35 text-center text-white shadow-sm"
+          className="flex h-[92px] w-[108.66px] flex-col items-center justify-center gap-1.5 rounded-[25px] border-[3px] border-white/35 text-center text-white shadow-sm"
           style={{ background: "linear-gradient(135deg, #00807C 0%, #38EF7D 100%)" }}
         >
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90">
@@ -123,7 +123,7 @@ export default function AccueilPage() {
 
         <Link
           href="/privilege"
-          className="flex h-[116px] w-[108.66px] flex-col items-center justify-center gap-2 rounded-[25px] border-[3px] border-white/35 text-center text-white shadow-sm"
+          className="flex h-[92px] w-[108.66px] flex-col items-center justify-center gap-1.5 rounded-[25px] border-[3px] border-white/35 text-center text-white shadow-sm"
           style={{ background: "linear-gradient(135deg, #F12711 0%, #F5AF19 100%)" }}
         >
           <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white/90">
@@ -134,7 +134,7 @@ export default function AccueilPage() {
 
         <Link
           href="/profil/aide"
-          className="relative flex h-[116px] w-[108.66px] flex-col items-center justify-center gap-2 rounded-[25px] border-[3px] border-white/35 text-center text-white shadow-sm"
+          className="relative flex h-[92px] w-[108.66px] flex-col items-center justify-center gap-1.5 rounded-[25px] border-[3px] border-white/35 text-center text-white shadow-sm"
           style={{ background: "linear-gradient(90deg, #0077FF 0%, #00BFFF 100%)" }}
         >
           <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-white/25">
@@ -165,37 +165,37 @@ export default function AccueilPage() {
         </section>
       ) : null}
 
-      {/* Vidéo / astuce en vedette */}
+      {/* Vidéo / astuce en vedette — même carte que la page Académy (libellé
+          + icône œil posés sur la carte, pas en dehors). */}
       {tutorielVedette ? (
         <section className="mt-4 px-4">
           <Link
             href={`/academy/${tutorielVedette.id}`}
-            className="block overflow-hidden rounded-3xl bg-[#12131a] text-white shadow-md"
+            className="block rounded-[18px] bg-white px-2 pb-2 pt-[7px] shadow-[0px_10px_10px_10px_rgba(0,0,0,0.05)]"
           >
-            <div className="relative aspect-[16/10]">
+            <div className="relative aspect-[352/192] overflow-hidden rounded-[18px]">
               <Image
                 src={couvertureTutoriel(tutorielVedette)}
                 alt={tutorielVedette.titre}
                 fill
                 className="object-cover"
-                sizes="(max-width: 480px) 100vw, 402px"
+                sizes="(max-width: 480px) 100vw, 366px"
               />
 
-              <span className="absolute right-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#12131a]">
-                <PlayIcon className="h-5 w-5" />
+              <span className="absolute inset-0 flex items-center justify-center bg-black/10">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-brand-ink">
+                  <PlayIcon className="h-5 w-5" />
+                </span>
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between pt-2">
+              <p className="truncate text-sm font-medium text-brand-ink">{tutorielVedette.titre}</p>
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-line text-brand-muted">
+                <EyeIcon className="h-4 w-4" />
               </span>
             </div>
           </Link>
-
-          <div className="mt-2 flex items-center justify-between">
-            <p className="truncate text-sm text-brand-ink">{tutorielVedette.titre}</p>
-            <Link
-              href="/academy"
-              className="flex h-[23px] w-[94px] shrink-0 items-center justify-center whitespace-nowrap rounded-[11.5px] border border-brand-line text-center text-[8.5px] font-semibold text-slate-600"
-            >
-              Voir d&apos;autres vidéos
-            </Link>
-          </div>
         </section>
       ) : null}
     </main>

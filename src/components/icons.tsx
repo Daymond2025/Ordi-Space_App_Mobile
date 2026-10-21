@@ -35,6 +35,17 @@ export function BagIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function ShareIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <circle cx="18" cy="5.5" r="2.5" />
+      <circle cx="6" cy="12" r="2.5" />
+      <circle cx="18" cy="18.5" r="2.5" />
+      <path d="m8.3 10.7 7.4-3.4M8.3 13.3l7.4 3.4" />
+    </svg>
+  );
+}
+
 export function PanierIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -487,6 +498,34 @@ export function ImageIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 /** Fermer la visionneuse photo plein écran. */
+export function WrenchIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M14.7 6.3a4 4 0 0 0-5.4 5.1L3 18.7l2.3 2.3L12.6 14a4 4 0 0 0 5.1-5.4l-2.6 2.6-2-2 2.6-2.6Z" />
+    </svg>
+  );
+}
+
+export function LifeBuoyIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="3.5" />
+      <path d="m7.3 7.3 2.8 2.8M16.7 7.3l-2.8 2.8M16.7 16.7l-2.8-2.8M7.3 16.7l2.8-2.8" />
+    </svg>
+  );
+}
+
+export function AcademyIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M2 8.5 12 4l10 4.5-10 4.5L2 8.5Z" />
+      <path d="M6 11v5c0 1.4 2.7 3 6 3s6-1.6 6-3v-5" />
+      <path d="M21 8.5V15" />
+    </svg>
+  );
+}
+
 export function CloseIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" {...props}>

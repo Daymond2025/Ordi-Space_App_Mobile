@@ -19,6 +19,26 @@ type NavItem = {
 
 const CLE_PRIVILEGES_VUS = "ordispace.privileges.vus";
 
+// Pages secondaires (listes, formulaires, fiches) où la nav globale laisse
+// la place au contenu — préfixes testés avec startsWith, donc leurs
+// sous-pages (détail, étapes de formulaire) héritent du même traitement.
+const PREFIXES_SANS_BOTTOMBAR = [
+  "/produit/",
+  "/privilege",
+  "/mes-achats",
+  "/mes-commandes",
+  "/profil/portefeuille",
+  "/reclamations",
+  "/profil/aide",
+  "/profil/compte",
+  "/profil/conditions",
+  "/service/assistances",
+  "/service/declarer-panne",
+  "/service/apres-vente",
+  "/service/garantix",
+  "/academy",
+];
+
 /**
  * Badge "nouveaux privilèges" — purement local (pas de notion de lu/non-lu
  * côté backend) : on compare le nombre total de privilèges actifs au nombre
@@ -51,16 +71,14 @@ function useNombreNouveauxPrivileges(): number {
 const NAV_ITEM_PROFIL: NavItem = { href: "/profil", label: "Profil", icon: UserIcon };
 const NAV_ITEM_SERVICE: NavItem = { href: "/service", label: "Service", icon: GridIcon };
 
+const COULEUR_ACTIVE = "text-[color:var(--brand-blue-end)]";
+
 function ContenuNavItem({ item, isActive }: { item: NavItem; isActive: boolean }) {
   const Icon = item.icon;
 
   return (
     <>
-      <span
-        className={`relative flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
-          isActive ? "bg-gradient-brand-blue text-white shadow-md shadow-blue-200" : "text-brand-muted"
-        }`}
-      >
+      <span className={`relative flex h-9 w-9 items-center justify-center transition-colors ${isActive ? COULEUR_ACTIVE : "text-brand-muted"}`}>
         <Icon className="h-5 w-5" />
         {item.badge ? (
           <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-semibold text-white">
@@ -68,7 +86,11 @@ function ContenuNavItem({ item, isActive }: { item: NavItem; isActive: boolean }
           </span>
         ) : null}
       </span>
-      <span className={isActive ? "text-brand-ink" : undefined}>{item.label}</span>
+      <span className={isActive ? `font-semibold ${COULEUR_ACTIVE}` : undefined}>{item.label}</span>
+      <span
+        aria-hidden
+        className={`mt-0.5 h-[3px] w-5 rounded-full transition-colors ${isActive ? "bg-[color:var(--brand-blue-end)]" : "bg-transparent"}`}
+      />
     </>
   );
 }
@@ -91,6 +113,8 @@ export function BottomNav() {
   const estActif = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
   const nouveauxPrivileges = useNombreNouveauxPrivileges();
 
+  if (PREFIXES_SANS_BOTTOMBAR.some((prefixe) => pathname.startsWith(prefixe))) return null;
+
   const navItems: NavItem[] = [
     { href: "/", label: "Space", icon: ShieldCheckIcon },
     { href: "/privilege", label: "Mes Privilège", icon: GiftIcon, badge: nouveauxPrivileges || undefined },
@@ -112,8 +136,8 @@ export function BottomNav() {
             href="/academy"
             className="flex flex-col items-center gap-1 text-[11px] font-medium text-brand-muted"
           >
-            <span className="bg-gradient-brand-blue -mt-6 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg shadow-blue-300 ring-4 ring-white">
-              <PlayIcon className="h-6 w-6" />
+            <span className="bg-gradient-brand-blue -mt-5 flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg shadow-blue-300 ring-4 ring-white">
+              <PlayIcon className="h-5 w-5" />
             </span>
           </Link>
         </li>

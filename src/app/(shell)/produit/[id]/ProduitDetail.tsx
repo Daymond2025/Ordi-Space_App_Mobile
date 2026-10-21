@@ -16,9 +16,9 @@ import {
   FenetresIcon,
   ImageIcon,
   MemoireIcon,
-  MinusIcon,
-  PlusIcon,
+  PanierIcon,
   ProcesseurIcon,
+  ShareIcon,
   ShieldCheckIcon,
 } from "@/components/icons";
 import { VisionneuseImages } from "@/components/VisionneuseImages";
@@ -26,23 +26,23 @@ import { useAuth } from "@/context/AuthContext";
 import { usePanier } from "@/context/PanierContext";
 
 const ONGLETS = [
-  { id: "description", label: "Description" },
   { id: "cadeaux", label: "Les cadeaux" },
+  { id: "description", label: "Description" },
   { id: "pack", label: "Pack complet" },
 ] as const;
 
 type IconeSpec = ComponentType<SVGProps<SVGSVGElement>>;
 const OMBRE_CARTE = "0px 1px 2px 0px rgba(0, 0, 0, 0.05)";
+const DEGRADE_ORANGE = "linear-gradient(273.52deg, #FFCC00 -3.09%, #FF7800 98.47%)";
 
 export function ProduitDetail({ id }: { id: string }) {
   const router = useRouter();
   const { token } = useAuth();
-  const { ajouter } = usePanier();
+  const { ajouter, nombreArticles } = usePanier();
   const [produit, setProduit] = useState<Produit | null | undefined>(undefined);
   const [imageActive, setImageActive] = useState(0);
-  const [ongletActif, setOngletActif] = useState<(typeof ONGLETS)[number]["id"]>("description");
+  const [ongletActif, setOngletActif] = useState<(typeof ONGLETS)[number]["id"]>("cadeaux");
   const [visionneuseOuverte, setVisionneuseOuverte] = useState(false);
-  const [quantite, setQuantite] = useState(1);
   const [ajoutEnCours, setAjoutEnCours] = useState(false);
   const [ajoute, setAjoute] = useState(false);
 
@@ -103,7 +103,7 @@ export function ProduitDetail({ id }: { id: string }) {
     }
     setAjoutEnCours(true);
     try {
-      await ajouter(produit.id, quantite);
+      await ajouter(produit.id, 1);
       setAjoute(true);
       setTimeout(() => setAjoute(false), 2000);
     } finally {
@@ -111,47 +111,84 @@ export function ProduitDetail({ id }: { id: string }) {
     }
   }
 
+  async function onPartager() {
+    if (!produit) return;
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: produit.nom_produit, url });
+      } catch {
+        // Partage annulé par l'utilisateur — rien à faire.
+      }
+    } else if (navigator.clipboard) {
+      await navigator.clipboard.writeText(url);
+    }
+  }
+
   return (
     <main className="min-h-full bg-[#f2f5fa] pb-40">
-      <div className="flex shrink-0 items-center justify-between bg-white px-4 py-3">
-        <Link href="/market-space" aria-label="Retour" className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F2F5FA] text-brand-ink">
+      <div className="flex shrink-0 items-center gap-2 bg-white px-4 py-3">
+        <Link href="/market-space" aria-label="Retour" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F2F5FA] text-brand-ink">
           <ChevronLeftIcon className="h-5 w-5" />
         </Link>
-        <p className="text-base font-extrabold text-brand-ink">Détails</p>
-        <div className="h-9 w-9" />
+        <p className="flex-1 text-center text-base font-extrabold text-brand-ink">Détails</p>
+        <button
+          type="button"
+          onClick={onPartager}
+          aria-label="Partager"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white"
+          style={{ background: DEGRADE_ORANGE }}
+        >
+          <ShareIcon className="h-4.5 w-4.5" />
+        </button>
+        <Link
+          href="/panier"
+          aria-label="Voir le panier"
+          className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white"
+          style={{ background: DEGRADE_ORANGE }}
+        >
+          <PanierIcon className="h-4.5 w-4.5" />
+          {nombreArticles > 0 ? (
+            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-semibold text-white">
+              {nombreArticles}
+            </span>
+          ) : null}
+        </Link>
       </div>
 
-      <div className="relative h-[320px] w-full shrink-0 bg-[#F2F5FA]">
-        {produit.images[imageActive] ? (
-          <button
-            type="button"
-            onClick={() => setVisionneuseOuverte(true)}
-            aria-label="Voir la photo en grand"
-            className="block h-full w-full cursor-zoom-in"
-          >
-            <Image src={produit.images[imageActive].url_image} alt="" fill className="object-cover" sizes="100vw" priority />
-          </button>
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-brand-muted">
-            <ImageIcon className="h-10 w-10" />
-          </div>
-        )}
-        {produit.etat_produit ? (
-          <span
-            className="absolute left-[13px] top-[15px] flex h-[22px] items-center rounded-lg px-2 text-xs font-bold leading-[14px] text-white"
-            style={{ background: "linear-gradient(273.52deg, #FFCC00 -3.09%, #FF7800 98.47%)", boxShadow: OMBRE_CARTE }}
-          >
-            {LIBELLE_ETAT_PRODUIT[produit.etat_produit]}
-          </span>
-        ) : null}
-        {produit.pourcentage_reduction ? (
-          <span
-            className="absolute right-3 top-[15px] flex h-[22px] items-center rounded px-2 text-xs font-bold leading-[14px] text-white"
-            style={{ background: "linear-gradient(115.13deg, #FF9700 0%, #FFB800 100%)" }}
-          >
-            -{produit.pourcentage_reduction}%
-          </span>
-        ) : null}
+      <div className="mx-3 mt-3 shrink-0 overflow-hidden rounded-2xl border border-brand-line bg-white">
+        <div className="relative h-[320px] w-full">
+          {produit.images[imageActive] ? (
+            <button
+              type="button"
+              onClick={() => setVisionneuseOuverte(true)}
+              aria-label="Voir la photo en grand"
+              className="block h-full w-full cursor-zoom-in"
+            >
+              <Image src={produit.images[imageActive].url_image} alt="" fill className="object-cover" sizes="100vw" priority />
+            </button>
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-brand-muted">
+              <ImageIcon className="h-10 w-10" />
+            </div>
+          )}
+          {produit.etat_produit ? (
+            <span
+              className="absolute left-[13px] top-[15px] flex h-[22px] items-center rounded-lg px-2 text-xs font-bold leading-[14px] text-white"
+              style={{ background: DEGRADE_ORANGE, boxShadow: OMBRE_CARTE }}
+            >
+              {LIBELLE_ETAT_PRODUIT[produit.etat_produit]}
+            </span>
+          ) : null}
+          {produit.pourcentage_reduction ? (
+            <span
+              className="absolute right-3 top-[15px] flex h-[22px] items-center rounded px-2 text-xs font-bold leading-[14px] text-white"
+              style={{ background: "linear-gradient(115.13deg, #FF9700 0%, #FFB800 100%)" }}
+            >
+              -{produit.pourcentage_reduction}%
+            </span>
+          ) : null}
+        </div>
       </div>
 
       {produit.images.length > 1 ? (
@@ -232,8 +269,9 @@ export function ProduitDetail({ id }: { id: string }) {
               type="button"
               onClick={() => setOngletActif(onglet.id)}
               className={`flex-1 rounded-full py-2 text-[11px] font-extrabold transition-colors ${
-                ongletActif === onglet.id ? "bg-gradient-brand-blue text-white" : "text-brand-muted"
+                ongletActif === onglet.id ? "text-white" : "text-brand-muted"
               }`}
+              style={ongletActif === onglet.id ? { background: DEGRADE_ORANGE } : undefined}
             >
               {onglet.label}
             </button>
@@ -275,44 +313,24 @@ export function ProduitDetail({ id }: { id: string }) {
       )}
 
       {enStock ? (
-        <div className="fixed inset-x-0 bottom-[64px] z-20 mx-auto flex w-full max-w-xl flex-col gap-2 border-t border-brand-line bg-white px-4 pt-3 pb-5">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-3 rounded-full border border-brand-line px-3 py-2">
-              <button
-                type="button"
-                onClick={() => setQuantite((q) => Math.max(1, q - 1))}
-                className="flex h-6 w-6 items-center justify-center text-brand-muted"
-                aria-label="Diminuer la quantité"
-              >
-                <MinusIcon className="h-4 w-4" />
-              </button>
-              <span className="w-5 text-center text-sm font-semibold text-brand-ink">{quantite}</span>
-              <button
-                type="button"
-                onClick={() => setQuantite((q) => Math.min(produit.quantite_stock, q + 1))}
-                className="flex h-6 w-6 items-center justify-center text-brand-muted"
-                aria-label="Augmenter la quantité"
-              >
-                <PlusIcon className="h-4 w-4" />
-              </button>
-            </div>
-
-            <Link
-              href={`/produit/${produit.id}/commander?quantite=${quantite}`}
-              className="bg-gradient-brand-blue flex h-12 flex-1 items-center justify-center rounded-full text-sm font-semibold text-white shadow-md shadow-blue-200"
-            >
-              Commander
-            </Link>
-          </div>
-
+        <div className="fixed inset-x-0 bottom-0 z-20 mx-auto flex w-full max-w-xl items-center gap-3 border-t border-brand-line bg-white px-4 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={onAjouterAuPanier}
             disabled={ajoutEnCours}
-            className="mx-auto flex h-11 items-center justify-center rounded-full border border-[color:var(--brand-blue-end)] px-8 text-sm font-semibold text-[color:var(--brand-blue-end)] disabled:opacity-60"
+            className="flex h-12 flex-1 items-center justify-center rounded-full border-2 px-2 text-sm font-semibold disabled:opacity-60"
+            style={{ borderColor: "#FF7800", color: "#FF7800" }}
           >
-            {ajoute ? "Ajouté au panier ✓" : ajoutEnCours ? "Ajout…" : "Ajouter au panier"}
+            {ajoute ? "Ajouté ✓" : ajoutEnCours ? "Ajout…" : "Ajouter au panier"}
           </button>
+
+          <Link
+            href={`/produit/${produit.id}/commander?quantite=1`}
+            className="flex h-12 flex-1 items-center justify-center rounded-full text-sm font-semibold text-white shadow-md"
+            style={{ background: DEGRADE_ORANGE }}
+          >
+            Commander
+          </Link>
         </div>
       ) : null}
 

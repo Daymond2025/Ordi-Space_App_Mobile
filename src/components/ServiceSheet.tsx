@@ -1,25 +1,34 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useServiceSheet } from "@/context/ServiceSheetContext";
+import {
+  EngrenageIcon,
+  HeadsetIcon,
+  LifeBuoyIcon,
+  MainServiceIcon,
+  ShieldCheckIcon,
+  TriangleAlerteIcon,
+  WrenchIcon,
+} from "@/components/icons";
+import type { ComponentType, SVGProps } from "react";
 
 type ServiceTile = {
   label: string;
-  image: string;
+  Icone: ComponentType<SVGProps<SVGSVGElement>>;
   bg: string;
+  couleur: string;
   href: string;
-  photo?: boolean;
 };
 
 const SERVICES: ServiceTile[] = [
-  { label: "Maintenance", image: "/images/maintenance.png", bg: "#FCF1DC", href: "/service/maintenance" },
-  { label: "Logiciels", image: "/images/informatique.png", bg: "#DCEFFB", href: "/market-space?categorie=logiciels" },
-  { label: "Asistances", image: "/images/soutien-technique.png", bg: "#DFF5E9", href: "/service/assistances" },
-  { label: "GarantiX", image: "/images/garantix.png", bg: "#E8F0FE", href: "/service/garantix" },
-  { label: "Déclarer une panne", image: "/images/declare_panne.png", bg: "#FBE1E1", href: "/service/declarer-panne" },
-  { label: "Service après-vente", image: "/images/service-apres-vente.svg", bg: "#E0F7F0", href: "/service/apres-vente" },
-  { label: "Aide rapide", image: "/images/support-agent.png", bg: "#EAE6FB", href: "/profil/aide", photo: true },
+  { label: "Maintenance", Icone: WrenchIcon, bg: "#FCF1DC", couleur: "#C8860D", href: "/service/maintenance" },
+  { label: "Logiciels", Icone: EngrenageIcon, bg: "#DCEFFB", couleur: "#2680EB", href: "/market-space?categorie=logiciels" },
+  { label: "Asistances", Icone: HeadsetIcon, bg: "#DFF5E9", couleur: "#16A34A", href: "/service/assistances" },
+  { label: "GarantiX", Icone: ShieldCheckIcon, bg: "#E8F0FE", couleur: "#4F6EF7", href: "/service/garantix" },
+  { label: "Déclarer une panne", Icone: TriangleAlerteIcon, bg: "#FBE1E1", couleur: "#EF4444", href: "/service/declarer-panne" },
+  { label: "Service après-vente", Icone: MainServiceIcon, bg: "#E0F7F0", couleur: "#0D9488", href: "/service/apres-vente" },
+  { label: "Aide rapide", Icone: LifeBuoyIcon, bg: "#EAE6FB", couleur: "#8B5CF6", href: "/profil/aide" },
 ];
 
 export function ServiceSheet() {
@@ -55,15 +64,8 @@ export function ServiceSheet() {
               onClick={() => allerVers(service.href)}
               className="flex flex-col items-center gap-2"
             >
-              <span className="relative flex h-[76px] w-[76px] items-center justify-center overflow-hidden rounded-2xl" style={{ backgroundColor: service.bg }}>
-                <Image
-                  src={service.image}
-                  alt=""
-                  fill
-                  unoptimized={!service.photo}
-                  className={service.photo ? "object-cover" : "object-contain p-4"}
-                  sizes="76px"
-                />
+              <span className="flex h-[76px] w-[76px] items-center justify-center rounded-2xl" style={{ backgroundColor: service.bg }}>
+                <service.Icone className="h-8 w-8" style={{ color: service.couleur }} />
               </span>
               <span className="text-center text-xs font-medium text-brand-ink">{service.label}</span>
             </button>
