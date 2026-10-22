@@ -72,7 +72,7 @@ export function AcademyTabs() {
                 <div className="relative aspect-[352/192] overflow-hidden rounded-[18px]">
                   <Image src={couvertureTutoriel(tuto)} alt="" fill className="object-cover" sizes="(max-width: 480px) 100vw, 366px" />
                   {tuto.id_video_youtube ? (
-                    <span className="absolute inset-0 flex items-center justify-center bg-black/15 backdrop-blur-[4px]">
+                    <span className="absolute inset-0 flex items-center justify-center bg-black/10">
                       <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-brand-ink">
                         <PlayIcon className="h-5 w-5" />
                       </span>
@@ -112,7 +112,7 @@ export function AcademyTabs() {
               <div className="relative aspect-[352/192] overflow-hidden rounded-[18px]">
                 <Image src={couvertureTutoriel(formation)} alt="" fill className="object-cover" sizes="(max-width: 480px) 100vw, 366px" />
                 {formation.id_video_youtube ? (
-                  <span className="absolute inset-0 flex items-center justify-center bg-black/15 backdrop-blur-[4px]">
+                  <span className="absolute inset-0 flex items-center justify-center bg-black/10">
                     <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-brand-ink">
                       <PlayIcon className="h-5 w-5" />
                     </span>
