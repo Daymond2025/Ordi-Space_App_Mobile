@@ -33,7 +33,7 @@ export function AcademyTabs() {
     <div className="px-4">
       {/* Plateau blanc qui commence juste à la fin de la bordure basse de
           l'en-tête dégradé — pas de chevauchement dedans. Les tabs reposent dessus. */}
-      <div className="relative z-10 -mx-4 rounded-[24px] bg-white px-[13px] py-4 shadow-[0px_2px_4px_0px_rgba(0,0,0,0.25)]">
+      <div className="relative z-10 -mx-4 bg-white px-[13px] py-4">
         <div className="flex h-11 rounded-full bg-white p-1 shadow-sm ring-1 ring-slate-100">
           <button
             type="button"
@@ -55,6 +55,9 @@ export function AcademyTabs() {
           </button>
         </div>
       </div>
+
+      {/* Ligne de séparation sur toute la largeur de l'écran. */}
+      <div className="-mx-4 h-px bg-brand-line" />
 
       {onglet === "rapide" ? (
         tutosRapides === null ? (
