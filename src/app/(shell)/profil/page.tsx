@@ -2,10 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { apiFetch } from "@/lib/api";
-import type { NotificationOrdispace, Pagination } from "@/lib/types";
+import { useNotifications } from "@/components/notifications/Notifications";
 import {
   BagIcon,
   BellIcon,
@@ -40,16 +38,9 @@ function ItemMenu({
 }
 
 export default function ProfilPage() {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const nomComplet = user ? `${user.prenom ?? ""} ${user.nom}`.trim() : "Invité";
-  const [nombreNonLues, setNombreNonLues] = useState(0);
-
-  useEffect(() => {
-    if (!token) return;
-    apiFetch<Pagination<NotificationOrdispace>>("/moi/notifications", { token }).then((page) => {
-      setNombreNonLues(page.data.filter((n) => !n.lu).length);
-    });
-  }, [token]);
+  const nombreNonLues = useNotifications().nonLues;
 
   return (
     <main className="min-h-full pb-8">

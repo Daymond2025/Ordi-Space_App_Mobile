@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Roboto } from "next/font/google";
 import { AuthProvider } from "@/context/AuthContext";
 import { EnregistrementServiceWorker } from "@/components/EnregistrementServiceWorker";
+import { NotificationsProvider } from "@/components/notifications/Notifications";
 import "./globals.css";
 
 // Police par défaut de toutes les plateformes OrdiSpace (Admin/Fournisseur/
@@ -36,7 +37,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="fr" className={`${roboto.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-background text-brand-ink md:bg-[linear-gradient(160deg,#eef3fb_0%,#e3e9f5_45%,#eef1f8_100%)]">
         <EnregistrementServiceWorker />
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <NotificationsProvider>{children}</NotificationsProvider>
+        </AuthProvider>
       </body>
     </html>
   );

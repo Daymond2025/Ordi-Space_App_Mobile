@@ -4,8 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useNotifications } from "@/components/notifications/Notifications";
 import { apiFetch } from "@/lib/api";
-import { formaterDate, type Achat, type NotificationOrdispace, type Pagination, type Privilege, type Tutoriel } from "@/lib/types";
+import { formaterDate, type Achat, type Pagination, type Privilege, type Tutoriel } from "@/lib/types";
 import { BellIcon, EyeIcon, GarantieBadgeIcon, PlayIcon, TagIcon } from "@/components/icons";
 import { degradePrivilege, tagPrivilege, valeurAffichee } from "./privilege/data";
 
@@ -29,7 +30,7 @@ export default function AccueilPage() {
   const [achats, setAchats] = useState<Achat[] | null>(null);
   const [privileges, setPrivileges] = useState<Privilege[] | null>(null);
   const [tutoriels, setTutoriels] = useState<Tutoriel[] | null>(null);
-  const [notificationsNonLues, setNotificationsNonLues] = useState(false);
+  const notificationsNonLues = useNotifications().nonLues > 0;
 
   useEffect(() => {
     if (!pret || !token) return;
@@ -38,9 +39,6 @@ export default function AccueilPage() {
     apiFetch<Pagination<Achat>>("/moi/achats", { token }).then((page) => setAchats(page.data));
     apiFetch<Privilege[]>("/privileges", { token }).then(setPrivileges);
     apiFetch<Pagination<Tutoriel>>("/tutoriels?per_page=100", { token }).then((page) => setTutoriels(page.data));
-    apiFetch<Pagination<NotificationOrdispace>>("/moi/notifications", { token }).then((page) =>
-      setNotificationsNonLues(page.data.some((n) => !n.lu))
-    );
   }, [pret, token]);
 
   const garantieVedette = useMemo(() => {
