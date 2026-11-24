@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/api";
@@ -56,6 +56,9 @@ const CLE_RAPPEL_MASQUE = "ordispace.notifications.rappel-masque";
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const { token } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  // Écrans d'authentification : pas de rappel par-dessus le formulaire.
+  const surEcranAuth = ["/connexion", "/inscription", "/mot-de-passe-oublie", "/login"].some((debut) => pathname.startsWith(debut));
   const [nonLues, setNonLues] = useState(0);
   const [urgentes, setUrgentes] = useState(0);
   const [version, setVersion] = useState(0);
@@ -264,7 +267,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         </div>
       ) : null}
 
-      {token && permission === "default" && !rappelMasque ? (
+      {token && permission === "default" && !rappelMasque && !surEcranAuth ? (
         <div className="fixed inset-x-0 bottom-24 z-[90] mx-auto w-full max-w-xl px-3">
           <div className="flex items-center gap-3 rounded-2xl bg-slate-900 p-3 text-white shadow-xl">
             <IconeCloche className="h-5 w-5 shrink-0 text-amber-300" />

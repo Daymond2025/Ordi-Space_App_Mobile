@@ -1,26 +1,36 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { ApiRequestError } from "@/lib/api";
-import { ChampTexte } from "@/components/auth/ChampTexte";
 import { ChampPhotoProfil } from "@/components/auth/ChampPhotoProfil";
-import { BoutonPrincipal } from "@/components/auth/BoutonPrincipal";
-import { ChevronLeftIcon } from "@/components/icons";
+import { CadreAuth } from "@/components/auth/kit/CadreAuth";
+import { ChampFlottant, IconePersonne } from "@/components/auth/kit/ChampFlottant";
+import { BoutonAuth, BoutonRetour, Etapes, MessageErreur } from "@/components/auth/kit/BoutonAuth";
+import type { HumeurMascotte } from "@/components/auth/kit/MascotteVivante";
+import { THEME_AUTH } from "@/components/auth/kit/themeAuth";
 
+/**
+ * Numéro inconnu à la connexion : création du compte client (nom, prénom
+ * optionnel, photo optionnelle), puis code WhatsApp.
+ */
 export function FormulaireInscription() {
   const { inscrireParTelephone } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const telephone = searchParams.get("telephone") ?? "";
+  const r = THEME_AUTH.repliques;
 
   const [nom, setNom] = useState("");
   const [prenom, setPrenom] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
   const [erreurs, setErreurs] = useState<Record<string, string>>({});
   const [erreurGenerale, setErreurGenerale] = useState<string | null>(null);
+  const [compteurErreurs, setCompteurErreurs] = useState(0);
   const [chargement, setChargement] = useState(false);
+  const [focus, setFocus] = useState(false);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -28,10 +38,12 @@ export function FormulaireInscription() {
 
     if (!telephone) {
       setErreurGenerale("Numéro manquant — recommence depuis l'écran de connexion.");
+      setCompteurErreurs((n) => n + 1);
       return;
     }
     if (!nom.trim()) {
       setErreurs({ nom: "Le nom est requis." });
+      setCompteurErreurs((n) => n + 1);
       return;
     }
 
@@ -46,6 +58,7 @@ export function FormulaireInscription() {
 
       router.push(`/connexion/verification?${params.toString()}`);
     } catch (erreur) {
+      setCompteurErreurs((n) => n + 1);
       if (erreur instanceof ApiRequestError) {
         if (erreur.fields) {
           setErreurs(Object.fromEntries(Object.entries(erreur.fields).map(([champ, msgs]) => [champ, msgs[0]])));
@@ -60,55 +73,85 @@ export function FormulaireInscription() {
     }
   }
 
+  const premiereErreur = erreurGenerale ?? Object.values(erreurs)[0] ?? null;
+  let humeur: HumeurMascotte = "repos";
+  let bulle = r.nom;
+  if (premiereErreur) {
+    humeur = "erreur";
+    bulle = r.erreur;
+  } else if (nom.trim()) {
+    humeur = "saisie";
+    bulle = `Enchanté${prenom.trim() ? `, ${prenom.trim()}` : ""} ! 💙`;
+  } else if (focus) {
+    humeur = "saisie";
+  }
+
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col bg-white pb-10 md:my-6 md:min-h-[calc(100dvh-3rem)] md:max-h-[calc(100dvh-3rem)] md:overflow-y-auto md:rounded-[2rem] md:shadow-2xl md:shadow-slate-900/15 md:ring-1 md:ring-black/5">
-      <div className="bg-gradient-brand-blue relative flex flex-col items-center rounded-b-[2.5rem] px-6 pb-16 pt-6 text-white">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="absolute left-4 top-6 flex h-9 w-9 items-center justify-center rounded-full bg-white/20"
-        >
-          <ChevronLeftIcon className="h-5 w-5" />
-        </button>
-        <h1 className="mt-16 text-center text-2xl font-extrabold leading-snug">
-          Bienvenue
-          <br />
-          sur Ordi&apos;space
-        </h1>
-      </div>
+    <CadreAuth humeur={humeur} bulle={bulle} declencheur={compteurErreurs}>
+      <form onSubmit={onSubmit} className="flex flex-1 flex-col" noValidate>
+        <div className="flex items-center gap-3">
+          <BoutonRetour onClick={() => router.back()} />
+          <div className="flex-1">
+            <Etapes etapes={["Numéro", "Profil", "Code"]} active={1} />
+          </div>
+        </div>
 
-      <form onSubmit={onSubmit} className="relative -mt-8 flex flex-1 flex-col rounded-t-[2rem] bg-white px-6 pb-8 pt-5">
-        <div className="mx-auto mb-8 h-1.5 w-12 rounded-full bg-brand-line" />
-
-        <h2 className="text-center text-lg font-bold text-brand-ink">
-          Finalise la création
-          <br />
-          de ton compte
-        </h2>
-        <p className="mt-2 text-center text-sm text-brand-muted">
-          Ce numéro n&apos;est pas encore enregistré. Renseigne ton identité pour continuer.
+        <h2 className="mt-5 text-2xl font-black text-slate-900">Crée ton compte</h2>
+        <p className="mt-1.5 text-sm text-slate-500">
+          Bienvenue dans ton Ordi&apos;Space
+          {telephone ? <span className="font-bold text-[var(--auth-accent)]"> · +{telephone.replace(/^\+/, "")}</span> : null}
         </p>
-        {telephone ? (
-          <p className="mt-1 text-center text-sm font-semibold text-[color:var(--brand-blue-end)]">+{telephone.replace(/^\+/, "")}</p>
-        ) : null}
 
-        <div className="mt-6 flex justify-center">
+        <div className="mt-5 flex justify-center">
           <ChampPhotoProfil onChange={setPhoto} />
         </div>
 
-        <div className="mt-6 flex flex-col gap-4">
-          <ChampTexte label="Nom" required value={nom} onChange={setNom} erreur={erreurs.nom} autoComplete="family-name" autoFocus />
-          <ChampTexte label="Prénom" value={prenom} onChange={setPrenom} erreur={erreurs.prenom} autoComplete="given-name" />
+        <div className="mt-5 flex flex-col gap-4">
+          <ChampFlottant
+            type="text"
+            label="Nom"
+            value={nom}
+            onChange={(v) => {
+              setNom(v);
+              setErreurs({});
+            }}
+            icone={<IconePersonne />}
+            valide={nom.trim().length > 1}
+            enErreur={Boolean(erreurs.nom)}
+            declencheurErreur={compteurErreurs}
+            autoComplete="family-name"
+            onFocus={() => setFocus(true)}
+            onBlur={() => setFocus(false)}
+          />
+          <ChampFlottant
+            type="text"
+            label="Prénom (optionnel)"
+            value={prenom}
+            onChange={setPrenom}
+            icone={<IconePersonne />}
+            enErreur={Boolean(erreurs.prenom)}
+            declencheurErreur={compteurErreurs}
+            autoComplete="given-name"
+            onFocus={() => setFocus(true)}
+            onBlur={() => setFocus(false)}
+          />
         </div>
 
-        {erreurGenerale ? <p className="mt-3 text-sm text-rose-500">{erreurGenerale}</p> : null}
+        <MessageErreur erreur={premiereErreur} />
 
-        <div className="flex-1" />
+        <div className="min-h-6 flex-1" />
 
-        <BoutonPrincipal chargement={chargement} texteChargement="Création du compte…" className="mt-10">
-          continuer
-        </BoutonPrincipal>
+        <BoutonAuth type="submit" chargement={chargement} texteChargement="Création…" className="mt-8">
+          Créer mon compte
+        </BoutonAuth>
+
+        <Link
+          href={`/connexion${telephone ? `?telephone=${encodeURIComponent(telephone)}` : ""}`}
+          className="mt-4 text-center text-sm font-bold text-[var(--auth-accent)] underline-offset-2 hover:underline"
+        >
+          Déjà un compte ? Se connecter
+        </Link>
       </form>
-    </main>
+    </CadreAuth>
   );
 }

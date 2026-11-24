@@ -1,29 +1,50 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { ApiRequestError } from "@/lib/api";
-import { ChampTelephoneWhatsapp } from "@/components/auth/ChampTelephoneWhatsapp";
-import { BoutonAuthCompact } from "@/components/auth/BoutonAuthCompact";
-import { ChevronLeftIcon } from "@/components/icons";
+import { CadreAuth, salutation } from "@/components/auth/kit/CadreAuth";
+import { ChampFlottant, IconeTelephone } from "@/components/auth/kit/ChampFlottant";
+import { BadgeSecurite, BoutonAuth, BoutonRetour, MessageErreur } from "@/components/auth/kit/BoutonAuth";
+import type { HumeurMascotte } from "@/components/auth/kit/MascotteVivante";
+import { THEME_AUTH } from "@/components/auth/kit/themeAuth";
 
+/**
+ * Connexion par numéro + code WhatsApp. Numéro inconnu : création du compte
+ * (/inscription). `next` : page à rouvrir une fois connecté.
+ */
 export function FormulaireConnexion() {
   const { demanderOtp } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const r = THEME_AUTH.repliques;
 
   const [telephone, setTelephone] = useState(() => (searchParams.get("telephone") ?? "").replace(/^\+225/, ""));
   const [erreur, setErreur] = useState<string | null>(null);
+  const [compteurErreurs, setCompteurErreurs] = useState(0);
   const [chargement, setChargement] = useState(false);
+  const [focus, setFocus] = useState(false);
+  const [accueil, setAccueil] = useState(true);
+  const numeroValide = telephone.replace(/\D/g, "").length >= 10;
+
+  useEffect(() => {
+    const t = setTimeout(() => setAccueil(false), 2600);
+    return () => clearTimeout(t);
+  }, []);
+
+  function signaler(message: string) {
+    setErreur(message);
+    setCompteurErreurs((n) => n + 1);
+    navigator.vibrate?.(120);
+  }
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setErreur(null);
 
     if (!telephone.trim()) {
-      setErreur("Entre ton numéro whatsapp.");
+      signaler("Entre ton numéro whatsapp.");
       return;
     }
 
@@ -41,58 +62,63 @@ export function FormulaireConnexion() {
       } else {
         router.push(`/inscription?${params.toString()}`);
       }
-    } catch (erreur) {
-      setErreur(erreur instanceof ApiRequestError ? erreur.message : "Impossible de se connecter. Vérifiez votre connexion internet.");
+    } catch (e) {
+      signaler(e instanceof ApiRequestError ? e.message : "Impossible de se connecter. Vérifiez votre connexion internet.");
     } finally {
       setChargement(false);
     }
   }
 
+  let humeur: HumeurMascotte = "repos";
+  let bulle = r.repos;
+  if (erreur) {
+    humeur = "erreur";
+    bulle = r.erreur;
+  } else if (focus) {
+    humeur = "saisie";
+    bulle = numeroValide ? r.telephoneOk : r.telephone;
+  } else if (accueil) {
+    humeur = "salut";
+    bulle = `${salutation()} ! ${r.salut}`;
+  }
+
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col bg-white pb-10 md:my-6 md:min-h-[calc(100dvh-3rem)] md:max-h-[calc(100dvh-3rem)] md:overflow-y-auto md:rounded-[2rem] md:shadow-2xl md:shadow-slate-900/15 md:ring-1 md:ring-black/5">
-      <div className="bg-gradient-brand-blue relative flex flex-col items-center rounded-b-[2.5rem] px-6 pb-6 pt-6 text-white">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="absolute left-4 top-6 flex h-9 w-9 items-center justify-center rounded-full bg-white/20"
-        >
-          <ChevronLeftIcon className="h-5 w-5" />
-        </button>
-        <h1 className="mt-2 text-center text-2xl font-extrabold leading-snug">
-          Connecte-toi
-          <br />
-          a ton Ordi&apos;space
-        </h1>
+    <CadreAuth humeur={humeur} bulle={bulle} declencheur={compteurErreurs}>
+      <form onSubmit={onSubmit} className="flex flex-1 flex-col" noValidate>
+        <BoutonRetour onClick={() => router.back()} />
+        <h2 className="mt-3 text-2xl font-black text-slate-900">Connexion</h2>
+        <p className="mt-1.5 text-sm text-slate-500">Entre ton numéro WhatsApp : on t&apos;envoie un code. Pas encore de compte ? On le crée ensemble.</p>
 
-        <Image
-          src="/images/mascotte.png"
-          alt=""
-          width={275}
-          height={274}
-          className="mt-2 h-[178px] w-[179px] object-contain"
-          priority
-        />
-      </div>
-
-      <form onSubmit={onSubmit} className="relative -mt-6 flex flex-1 flex-col rounded-t-[2rem] bg-white px-6 pb-8 pt-5">
-        <div className="mx-auto mb-8 h-1.5 w-12 rounded-full bg-brand-line" />
-
-        <h2 className="text-center text-lg font-bold text-brand-ink">
-          Entre ton numéro
-          <br />
-          whatsapp
-        </h2>
-
-        <div className="mt-8">
-          <ChampTelephoneWhatsapp value={telephone} onChange={setTelephone} erreur={erreur ?? undefined} autoFocus />
+        <div className="mt-7">
+          <ChampFlottant
+            type="tel"
+            label="Numéro WhatsApp"
+            value={telephone}
+            onChange={(v) => {
+              setTelephone(v);
+              setErreur(null);
+            }}
+            icone={<IconeTelephone />}
+            indicatif
+            valide={numeroValide}
+            enErreur={Boolean(erreur)}
+            declencheurErreur={compteurErreurs}
+            autoComplete="tel-national"
+            onFocus={() => setFocus(true)}
+            onBlur={() => setFocus(false)}
+          />
         </div>
 
-        <div className="flex-1" />
+        <MessageErreur erreur={erreur} />
 
-        <BoutonAuthCompact chargement={chargement} texteChargement="Vérification…" className="mt-10">
-          connexion
-        </BoutonAuthCompact>
+        <div className="min-h-6 flex-1" />
+
+        <BoutonAuth type="submit" chargement={chargement} texteChargement="Envoi du code…" className="mt-8">
+          Recevoir mon code
+        </BoutonAuth>
+
+        <BadgeSecurite texte={THEME_AUTH.badge} />
       </form>
-    </main>
+    </CadreAuth>
   );
 }
