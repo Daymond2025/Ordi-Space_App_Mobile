@@ -96,8 +96,8 @@ export function FormulaireInscription() {
           </div>
         </div>
 
-        <h2 className="mt-5 text-2xl font-black text-slate-900">Crée ton compte</h2>
-        <p className="mt-1.5 text-sm text-slate-500">
+        <h2 className="mt-5 text-center text-3xl font-black text-slate-900">Crée ton compte</h2>
+        <p className="mt-1.5 text-center text-sm text-slate-500">
           Bienvenue dans ton Ordi&apos;Space
           {telephone ? <span className="font-bold text-[var(--auth-accent)]"> · +{telephone.replace(/^\+/, "")}</span> : null}
         </p>
@@ -139,9 +139,8 @@ export function FormulaireInscription() {
 
         <MessageErreur erreur={premiereErreur} />
 
-        <div className="min-h-6 flex-1" />
 
-        <BoutonAuth type="submit" chargement={chargement} texteChargement="Création…" className="mt-8">
+        <BoutonAuth type="submit" chargement={chargement} texteChargement="Création…" className="mt-10">
           Créer mon compte
         </BoutonAuth>
 
