@@ -2,17 +2,19 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch, ApiRequestError } from "@/lib/api";
 import type { AchatDetail } from "@/lib/types";
 import { CheckCircleIcon, ChevronLeftIcon, TriangleAlerteIcon } from "@/components/icons";
+import { useRetour } from "@/lib/navigation";
 
 const DEGRADE_CONFIRMER = "linear-gradient(90deg, #0077FF 0%, #00BFFF 100%)";
 
 export function SelectionPointMaintenance() {
-  const router = useRouter();
+  // Retour fiable même si la page a été ouverte directement (notification, lien, appli rouverte) — voir lib/navigation.ts.
+  const retour = useRetour("/service/declarer-panne");
   const searchParams = useSearchParams();
   const { token } = useAuth();
   const achatId = searchParams.get("achat");
@@ -82,7 +84,7 @@ export function SelectionPointMaintenance() {
           style={{ top: 11, left: 31, transform: "rotate(-27.05deg)" }}
         />
 
-        <button type="button" onClick={() => router.back()} className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-brand-ink">
+        <button type="button" onClick={retour} className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-brand-ink">
           <ChevronLeftIcon className="h-5 w-5" />
         </button>
 

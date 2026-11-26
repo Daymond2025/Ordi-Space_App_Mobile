@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch, ApiRequestError } from "@/lib/api";
 import {
@@ -14,6 +13,7 @@ import {
   type Pagination,
 } from "@/lib/types";
 import { CheckCircleIcon, ChevronDownIcon, ChevronLeftIcon, MedalStarIcon } from "@/components/icons";
+import { useRetour } from "@/lib/navigation";
 
 const COULEUR_BOUTON_ACTIF = "rgba(0, 224, 101, 0.86)";
 
@@ -31,7 +31,8 @@ const LIBELLE_MODE_PAIEMENT: Record<string, string> = {
 };
 
 export default function GarantixPage() {
-  const router = useRouter();
+  // Retour fiable même si la page a été ouverte directement (notification, lien, appli rouverte) — voir lib/navigation.ts.
+  const retour = useRetour("/");
   const { token, pret } = useAuth();
 
   const [achats, setAchats] = useState<Achat[] | null>(null);
@@ -103,7 +104,7 @@ export default function GarantixPage() {
   return (
     <main className="min-h-full pb-10">
       <div className="bg-gradient-brand-blue relative flex items-center gap-3 rounded-b-[2rem] px-4 pb-10 pt-4 text-white">
-        <button type="button" onClick={() => router.back()} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20">
+        <button type="button" onClick={retour} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20">
           <ChevronLeftIcon className="h-5 w-5" />
         </button>
         <h1 className="absolute inset-x-0 text-center text-base font-bold">GarantiX</h1>

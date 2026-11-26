@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ChevronLeftIcon, TriangleAlerteIcon } from "@/components/icons";
+import { useRetour } from "@/lib/navigation";
 
 // Écran "Service après-vente" — mockup fourni. Le bouton "Service après-vente"
 // ne peut pas renvoyer vers cet écran lui-même ; en attendant le mockup de
@@ -14,7 +14,8 @@ const DEGRADE_RECLAMATIONS = "linear-gradient(105.59deg, #0C003F -28.56%, #0077F
 const COULEUR_ACCENT = "#00D8A4";
 
 export default function ServiceApresVentePage() {
-  const router = useRouter();
+  // Retour fiable même si la page a été ouverte directement (notification, lien, appli rouverte) — voir lib/navigation.ts.
+  const retour = useRetour("/");
 
   return (
     <main className="relative flex min-h-full flex-col overflow-hidden pb-8" style={{ backgroundImage: DEGRADE_FOND }}>
@@ -30,7 +31,7 @@ export default function ServiceApresVentePage() {
       <TriangleAlerteIcon className="pointer-events-none absolute right-4 top-[28rem] h-24 w-24 rotate-[-6deg] text-white/10" />
 
       <div className="relative flex items-center gap-3 px-4 pt-4">
-        <button type="button" onClick={() => router.back()} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20">
+        <button type="button" onClick={retour} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20">
           <ChevronLeftIcon className="h-5 w-5 text-white" />
         </button>
         <h1 className="absolute inset-x-0 text-center text-base font-bold text-white">Centre de maintenance</h1>

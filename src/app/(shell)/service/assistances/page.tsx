@@ -2,12 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/api";
 import type { Pagination, QuestionFrequente } from "@/lib/types";
 import { ChevronLeftIcon, PauseIcon, PlayIcon } from "@/components/icons";
+import { useRetour } from "@/lib/navigation";
 
 const DEGRADE_APPEL = "linear-gradient(270deg, #00BFFF 0%, #0077FF 100%)";
 const DEGRADE_WHATSAPP = "linear-gradient(93.35deg, #36CE00 0%, #00D8A4 118.39%)";
@@ -20,7 +20,8 @@ function formaterDuree(secondes: number): string {
 }
 
 export default function AssistancesPage() {
-  const router = useRouter();
+  // Retour fiable même si la page a été ouverte directement (notification, lien, appli rouverte) — voir lib/navigation.ts.
+  const retour = useRetour("/");
   const { token, pret } = useAuth();
 
   const [questions, setQuestions] = useState<QuestionFrequente[] | null>(null);
@@ -61,7 +62,7 @@ export default function AssistancesPage() {
     <main className="min-h-full pb-10">
       <div className="bg-gradient-brand-blue relative rounded-b-[2rem] px-4 pb-5 pt-4">
         <div className="flex items-center gap-3">
-          <button type="button" onClick={() => router.back()} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20">
+          <button type="button" onClick={retour} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20">
             <ChevronLeftIcon className="h-5 w-5 text-white" />
           </button>
           <h1 className="absolute inset-x-0 text-center text-base font-bold text-white">Service d&apos;assistance</h1>

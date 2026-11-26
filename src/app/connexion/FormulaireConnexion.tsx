@@ -9,6 +9,7 @@ import { ChampFlottant, IconeTelephone } from "@/components/auth/kit/ChampFlotta
 import { BadgeSecurite, BoutonAuth, BoutonRetour, MessageErreur } from "@/components/auth/kit/BoutonAuth";
 import type { HumeurMascotte } from "@/components/auth/kit/MascotteVivante";
 import { THEME_AUTH } from "@/components/auth/kit/themeAuth";
+import { useRetour } from "@/lib/navigation";
 
 /**
  * Connexion par numéro + code WhatsApp. Numéro inconnu : création du compte
@@ -17,6 +18,8 @@ import { THEME_AUTH } from "@/components/auth/kit/themeAuth";
 export function FormulaireConnexion() {
   const { demanderOtp } = useAuth();
   const router = useRouter();
+  // Retour fiable même si la page a été ouverte directement (notification, lien, appli rouverte) — voir lib/navigation.ts.
+  const retour = useRetour("/");
   const searchParams = useSearchParams();
   const r = THEME_AUTH.repliques;
 
@@ -85,7 +88,7 @@ export function FormulaireConnexion() {
   return (
     <CadreAuth humeur={humeur} bulle={bulle} declencheur={compteurErreurs}>
       <form onSubmit={onSubmit} className="flex flex-1 flex-col" noValidate>
-        <BoutonRetour onClick={() => router.back()} />
+        <BoutonRetour onClick={retour} />
         <h2 className="mt-3 text-center text-3xl font-black text-slate-900">Connexion</h2>
         <p className="mt-1.5 text-center text-sm text-slate-500">Entre ton numéro WhatsApp : on t&apos;envoie un code. Pas encore de compte ? On le crée ensemble.</p>
 

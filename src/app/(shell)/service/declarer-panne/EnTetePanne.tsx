@@ -1,11 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { ChevronLeftIcon } from "@/components/icons";
+import { useRetour } from "@/lib/navigation";
 
 export function EnTetePanne() {
-  const router = useRouter();
+  // Retour fiable même si la page a été ouverte directement (notification, lien, appli rouverte) — voir lib/navigation.ts.
+  const retour = useRetour("/");
 
   return (
     <div className="bg-gradient-brand-blue relative overflow-hidden rounded-b-[2rem] px-5 pt-4" style={{ height: 340 }}>
@@ -20,7 +21,7 @@ export function EnTetePanne() {
 
       <button
         type="button"
-        onClick={() => router.back()}
+        onClick={retour}
         className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-brand-ink"
       >
         <ChevronLeftIcon className="h-5 w-5" />
